@@ -13,6 +13,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+add_subdirectory(deps/raylib EXCLUDE_FROM_ALL)
+
 set(BOIDS_SYNTH_SRC
   src/main.c
   )
@@ -22,8 +24,8 @@ file(GLOB TRIPOD_SRC deps/tripod/src/tp/*.c deps/tripod/src/tp/*.S)
 
 add_executable(boids-synth ${BOIDS_SYNTH_SRC} ${TRIPOD_SRC})
 
-target_include_directories(boids-synth PRIVATE deps/tripod/src)
-target_link_libraries(boids-synth PRIVATE m pulse-simple c)
+target_include_directories(boids-synth PRIVATE deps/tripod/src deps/raylib/include)
+target_link_libraries(boids-synth PRIVATE m pulse-simple c raylib)
 
 set_property(TARGET boids-synth PROPERTY C_STANDARD 99)
 
