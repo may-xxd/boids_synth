@@ -13,10 +13,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-add_subdirectory(deps/raylib EXCLUDE_FROM_ALL)
+#add_subdirectory(deps/raylib EXCLUDE_FROM_ALL)
 
 set(BOIDS_SYNTH_SRC
   src/main.c
+  src/boid.c
   )
 
 file(GLOB TRIPOD_SRC deps/tripod/src/tp/*.c deps/tripod/src/tp/*.S)

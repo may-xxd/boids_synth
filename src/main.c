@@ -24,6 +24,23 @@ int main(void) {
   boids.data = tp_allocator_alloc(&allocator, MAX_BOIDS, sizeof(boid));
   boids.count = MAX_BOIDS;
   usize active_boids = 0;
+
+  boids.data[active_boids] =
+      (boid){.x = 100.0f, .y = 100.0f, .vx = 1.0f, .vy = 1.0f};
+  active_boids++;
+
+  boids.data[active_boids] =
+      (boid){.x = 110.0f, .y = 100.0f, .vx = 1.3f, .vy = 1.0f};
+  active_boids++;
+
+  boids.data[active_boids] =
+      (boid){.x = 110.0f, .y = 110.0f, .vx = 1.5f, .vy = 1.0f};
+  active_boids++;
+
+  boids.data[active_boids] =
+      (boid){.x = 100.0f, .y = 110.0f, .vx = 1.2f, .vy = 1.0f};
+  active_boids++;
+
   boid_params params = {.avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f};
 
   InitWindow(WIDTH, HEIGHT, "window_me");
@@ -33,6 +50,15 @@ int main(void) {
   while (!WindowShouldClose()) {
     f32 dt = GetFrameTime();
     update_boids(boids, active_boids, params, dt);
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    for (usize ii = 0; ii < active_boids; ii++) {
+      DrawCircle(boids.data[ii].x, boids.data[ii].y, 5.0f, GRAY);
+      DrawLine(boids.data[ii].x, boids.data[ii].y,
+               boids.data[ii].x + boids.data[ii].vx,
+               boids.data[ii].y + boids.data[ii].vy, RED);
+    }
+    EndDrawing();
   }
 
   CloseWindow();
