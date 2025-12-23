@@ -18,6 +18,8 @@ endif()
 set(BOIDS_SYNTH_SRC
   src/main.c
   src/boid.c
+  src/module.c
+  src/parameter.c
   )
 
 file(GLOB TRIPOD_SRC deps/tripod/src/tp/*.c deps/tripod/src/tp/*.S)

@@ -8,6 +8,8 @@ const f32 MARGIN_SIZE = 50.0f;
 const f32 TURN_FACTOR = 400.0f;
 const f32 ARENA_W = 800.0f;
 const f32 ARENA_H = 600.0f;
+const f32 MAX_SPEED = 300.0f;
+const f32 MIN_SPEED = 30.0f;
 
 void update_boids(tp_slice_boid boids, usize active_boids, boid_params params,
                   f32 dt) {
@@ -93,23 +95,85 @@ void update_boids(tp_slice_boid boids, usize active_boids, boid_params params,
 
     float speed = tp_math_sqrt_f32(b->vx * b->vx + b->vy * b->vy);
 
-    /*
-    if (speed > max_speed) {
-      b.vx = (b.vx / speed) * max_speed;
-      b.vy = (b.vy / speed) * max_speed;
-      speed = max_speed;
+    if (speed > MAX_SPEED) {
+      b->vx = (b->vx / speed) * MAX_SPEED;
+      b->vy = (b->vy / speed) * MAX_SPEED;
+      speed = MAX_SPEED;
     }
 
-    else if (speed < min_speed) {
-      b.vx = (b.vx / speed) * min_speed;
-      b.vy = (b.vy / speed) * min_speed;
-      speed = min_speed;
+    else if (speed < MIN_SPEED) {
+      b->vx = (b->vx / speed) * MIN_SPEED;
+      b->vy = (b->vy / speed) * MIN_SPEED;
+      speed = MIN_SPEED;
     }
-    */
 
     b->speed = speed;
 
     b->x += b->vx * dt;
     b->y += b->vy * dt;
+
+    for (usize module_ii = 0u; module_ii < b->voice.active_modules;
+         module_ii++) {
+      module *m = &b->voice.modules.data[module_ii];
+      switch (m->type) {
+      case OSCILLATOR: {
+        oscillator *osc = &m->inner.oscillator;
+        apply_modulation(b, &osc->freq);
+        break;
+      }
+      case LOW_PASS_FILTER: {
+        low_pass_filter *lpf = &m->inner.low_pass_filter;
+        apply_modulation(b, &lpf->frequency);
+        apply_modulation(b, &lpf->resonance);
+        apply_modulation(b, &lpf->drive);
+        break;
+      }
+      }
+    }
   }
+}
+
+void apply_modulation(boid *b, parameter *p) {
+  TP_ASSERT(p);
+  switch (p->source) {
+  case NONE: {
+    return;
+  }
+  case SPEED: {
+    p->modulation = b->speed;
+    break;
+  }
+  case COHESION: {
+    p->modulation = b->cohesion;
+    break;
+  }
+  case ALIGNMENT: {
+    p->modulation = b->alignment;
+    break;
+  }
+  case AVOIDANCE: {
+    p->modulation = b->avoidance;
+    break;
+  }
+  }
+}
+
+#define NUM_MODULES 10
+boid make_boid(f32 x, f32 y, tp_allocator *allocator) {
+  boid ret = (boid){.x = x, .y = y};
+
+  ret.voice.modules.data = tp_allocator_alloc(allocator, NUM_MODULES,
+                                              sizeof(*ret.voice.modules.data));
+
+  ret.voice.modules.count = NUM_MODULES;
+  ret.voice.active_modules = 0;
+  return ret;
+}
+
+void add_module(boid *b, module m) {
+  TP_ASSERT(b);
+  TP_ASSERT(b->voice.modules.data);
+  TP_ASSERT(b->voice.active_modules < b->voice.modules.count);
+  b->voice.modules.data[b->voice.active_modules] = m;
+  b->voice.active_modules++;
 }
