@@ -33,10 +33,10 @@ int main(void) {
 
   oscillator o = {.freq = {.input_min = 0,
                            .input_max = 100.f,
-                           .output_min = -50.0f,
+                           .output_min = 0.0f,
                            .output_max = 50.0f,
                            .base = 261.63f,
-                           .amount = 1.0f,
+                           .amount = 0.5f,
                            .source = SPEED},
                   .shape = SINE,
                   .amplitude = 1.0f};
@@ -57,7 +57,7 @@ int main(void) {
   active_boids++;
 
   boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
-  m.inner.oscillator.freq.base = 466.16;
+  m.inner.oscillator.freq.base = 493.88;
   add_module(&boids.data[active_boids], m);
   active_boids++;
 
