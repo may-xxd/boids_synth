@@ -12,21 +12,24 @@ typedef enum oscillator_shape {
   SINE,
 } oscillator_shape;
 
-typedef struct oscillator_params {
+typedef struct oscillator {
   f32 angle;
   parameter freq;
   oscillator_shape shape;
   f32 amplitude;
 } oscillator;
 
-typedef struct low_pass_filter_params {
+typedef struct low_pass_filter {
   parameter frequency;
   parameter resonance;
   parameter drive;
+  f32 prev_input[2];
+  f32 prev_output[2];
 } low_pass_filter;
 
 typedef struct module {
   module_type type;
+  f32 wet;
   union {
     oscillator oscillator;
     low_pass_filter low_pass_filter;

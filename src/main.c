@@ -7,6 +7,7 @@
 #include "tp/io.h"
 #include "tp/log.h"
 #include "tp/math.h"
+#include "tp/music.h"
 #include "tp/string.h"
 #include "tp/time.h"
 
@@ -35,30 +36,30 @@ int main(void) {
                            .input_max = 100.f,
                            .output_min = 0.0f,
                            .output_max = 50.0f,
-                           .base = 261.63f,
+                           .base = tp_music_note_to_hz(NOTE_C, 4),
                            .amount = 0.5f,
                            .source = SPEED},
                   .shape = SINE,
                   .amplitude = 1.0f};
-  module m = {.type = OSCILLATOR, .inner = o};
+  module m_o = {.type = OSCILLATOR, .inner = o, .wet = 1.0f};
 
   boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
-  add_module(&boids.data[active_boids], m);
+  add_module(&boids.data[active_boids], m_o);
   active_boids++;
 
   boids.data[active_boids] = make_boid(110.0f, 100.0f, &allocator);
-  m.inner.oscillator.freq.base = 329.63;
-  add_module(&boids.data[active_boids], m);
+  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_E, 4);
+  add_module(&boids.data[active_boids], m_o);
   active_boids++;
 
   boids.data[active_boids] = make_boid(110.0f, 110.0f, &allocator);
-  m.inner.oscillator.freq.base = 392.0;
-  add_module(&boids.data[active_boids], m);
+  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_A, 4);
+  add_module(&boids.data[active_boids], m_o);
   active_boids++;
 
   boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
-  m.inner.oscillator.freq.base = 493.88;
-  add_module(&boids.data[active_boids], m);
+  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_B, 4);
+  add_module(&boids.data[active_boids], m_o);
   active_boids++;
 
   boid_params params = {.avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f};
@@ -68,6 +69,7 @@ int main(void) {
   SetTargetFPS(FPS);
 
   f32 dt = 1.0f / FPS;
+  usize frame_ii = 0;
   while (!WindowShouldClose()) {
     f32 samples_f32[MAX_SAMPLES] = {0};
     i16 samples_i16[MAX_SAMPLES] = {0};
@@ -99,7 +101,19 @@ int main(void) {
 
     tp_audio_write(&allocator, audio, samples_slice_i16);
 
+    if (frame_ii == 0) {
+      tp_audio_write_wav(&allocator, samples_slice_i16,
+                         tp_string_from_string_constant("frame_0.wav"), 1,
+                         SAMPLE_RATE);
+    }
+    if (frame_ii == 1) {
+      tp_audio_write_wav(&allocator, samples_slice_i16,
+                         tp_string_from_string_constant("frame_1.wav"), 1,
+                         SAMPLE_RATE);
+    }
+
     dt = GetFrameTime();
+    frame_ii++;
   }
 
   CloseWindow();
