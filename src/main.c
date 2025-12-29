@@ -43,6 +43,17 @@ int main(void) {
                   .amplitude = 1.0f};
   module m_o = {.type = OSCILLATOR, .inner = {.oscillator = o}, .wet = 1.0f};
 
+  oscillator o2 = {.freq = {.input_min = 0,
+                            .input_max = 100.f,
+                            .output_min = 0.0f,
+                            .output_max = 50.0f,
+                            .base = tp_music_note_to_hz(NOTE_C, 4),
+                            .amount = 0.5f,
+                            .source = SPEED},
+                   .shape = SINE,
+                   .amplitude = 1.0f};
+  module m_o2 = {.type = OSCILLATOR, .inner = {.oscillator = o2}, .wet = 1.0f};
+
   low_pass_filter lpf = {
       .frequency = {.input_min = 0.0f,
                     .input_max = 10.0f,
@@ -71,7 +82,7 @@ int main(void) {
       .type = LOW_PASS_FILTER, .inner = {.low_pass_filter = lpf}, .wet = 1.0f};
 
   (void)m_f;
-  for (u8 octave = 2; octave < 6; octave++) {
+  for (u8 octave = 0; octave < 8; octave++) {
     boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
     m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_C, octave);
     add_module(&boids.data[active_boids], m_o);
@@ -97,6 +108,28 @@ int main(void) {
     active_boids++;
   }
 
+  for (u8 octave = 0; octave < 8; octave++) {
+    boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_C, octave);
+    add_module(&boids.data[active_boids], m_o2);
+    active_boids++;
+
+    boids.data[active_boids] = make_boid(110.0f, 100.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_E, octave);
+    add_module(&boids.data[active_boids], m_o2);
+    active_boids++;
+
+    boids.data[active_boids] = make_boid(110.0f, 110.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_A, octave);
+    add_module(&boids.data[active_boids], m_o2);
+    active_boids++;
+
+    boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_B, octave);
+    add_module(&boids.data[active_boids], m_o2);
+    active_boids++;
+  }
+
   boid_params params = {
       .avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f, .fear = 3000.0f};
 
@@ -110,7 +143,7 @@ int main(void) {
     Vector2 mouse_pos = GetMousePosition();
     f32 samples_f32[MAX_SAMPLES] = {0};
     i16 samples_i16[MAX_SAMPLES] = {0};
-    usize num_samples = dt * SAMPLE_RATE + 1;
+    usize num_samples = dt * SAMPLE_RATE - 1;
     TP_ASSERT(num_samples < MAX_SAMPLES);
     tp_slice_f32 samples_slice = {.data = samples_f32, .count = num_samples};
 
@@ -138,16 +171,8 @@ int main(void) {
 
     tp_audio_write(&allocator, audio, samples_slice_i16);
 
-    if (frame_ii == 0) {
-      tp_audio_write_wav(&allocator, samples_slice_i16,
-                         tp_string_from_string_constant("frame_0.wav"), 1,
-                         SAMPLE_RATE);
-    }
-    if (frame_ii == 1) {
-      tp_audio_write_wav(&allocator, samples_slice_i16,
-                         tp_string_from_string_constant("frame_1.wav"), 1,
-                         SAMPLE_RATE);
-    }
+    int err;
+    tp_log_f32(pa_simple_get_latency(audio.s, &err));
 
     dt = GetFrameTime();
     frame_ii++;
