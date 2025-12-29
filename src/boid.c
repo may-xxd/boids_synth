@@ -12,7 +12,7 @@ const f32 MAX_SPEED = 300.0f;
 const f32 MIN_SPEED = 30.0f;
 
 void update_boids(tp_slice_boid boids, usize active_boids, boid_params params,
-                  f32 dt) {
+                  f32 dt, f32 mouse_x, f32 mouse_y) {
   TP_ASSERT(boids.data);
   for (usize ii = 0; ii < active_boids; ii++) {
     boid *b = &boids.data[ii];
@@ -80,6 +80,14 @@ void update_boids(tp_slice_boid boids, usize active_boids, boid_params params,
       b->cohesion = params.cohesion * tp_math_sqrt_f32(cohesion_x * cohesion_x +
                                                        cohesion_y * cohesion_y);
     }
+
+    f32 mouse_dx = b->x - mouse_x;
+    f32 mouse_dy = b->y - mouse_y;
+    f32 fear_factor = 1.0f /(mouse_dx * mouse_dx + mouse_dy * mouse_dy);
+    f32 fear = params.fear * fear_factor;
+    b->fear = fear;
+    b->vx += dt * mouse_dx * fear;
+    b->vy += dt * mouse_dy * fear;
 
     if (b->x < MARGIN_SIZE) {
       b->vx += dt * TURN_FACTOR;
@@ -153,6 +161,10 @@ void apply_modulation(boid *b, parameter *p) {
   }
   case AVOIDANCE: {
     p->modulation = b->avoidance;
+    break;
+  }
+  case FEAR: {
+    p->modulation = b->fear;
     break;
   }
   }

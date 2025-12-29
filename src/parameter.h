@@ -9,6 +9,7 @@ typedef enum modulation_source {
   COHESION,
   ALIGNMENT,
   AVOIDANCE,
+  FEAR,
 } modulation_source;
 
 typedef struct parameter {

@@ -39,33 +39,66 @@ int main(void) {
                            .base = tp_music_note_to_hz(NOTE_C, 4),
                            .amount = 0.5f,
                            .source = SPEED},
-                  .shape = SINE,
+                  .shape = SAW,
                   .amplitude = 1.0f};
-  module m_o = {.type = OSCILLATOR, .inner = o, .wet = 1.0f};
+  module m_o = {.type = OSCILLATOR, .inner = {.oscillator = o}, .wet = 1.0f};
 
+  low_pass_filter lpf = {
+      .frequency = {.input_min = 0.0f,
+                    .input_max = 10.0f,
+                    .output_min = 0.0f,
+                    .output_max = 1000.0f,
+                    .base = 400.0f,
+                    .amount = 1.0f,
+                    .source = FEAR},
+      .resonance = {.input_min = 0.0f,
+                    .input_max = 10.0f,
+                    .output_min = 0.0f,
+                    .output_max = 50.0f,
+                    .base = 0.9f / 4.9f,
+                    .amount = 1.0f,
+                    .source = NONE},
+      .drive = {.input_min = 0.0f,
+                .input_max = 10.0f,
+                .output_min = 0.0f,
+                .output_max = 50.0f,
+                .base = 1.0f,
+                .amount = 1.0f,
+                .source = NONE},
+  };
+
+  module m_f = {
+      .type = LOW_PASS_FILTER, .inner = {.low_pass_filter = lpf}, .wet = 1.0f};
+
+  (void)m_f;
   for (u8 octave = 2; octave < 6; octave++) {
     boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
     m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_C, octave);
     add_module(&boids.data[active_boids], m_o);
+    add_module(&boids.data[active_boids], m_f);
     active_boids++;
 
     boids.data[active_boids] = make_boid(110.0f, 100.0f, &allocator);
     m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_E, octave);
     add_module(&boids.data[active_boids], m_o);
+    add_module(&boids.data[active_boids], m_f);
     active_boids++;
 
     boids.data[active_boids] = make_boid(110.0f, 110.0f, &allocator);
     m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_A, octave);
     add_module(&boids.data[active_boids], m_o);
+    add_module(&boids.data[active_boids], m_f);
     active_boids++;
 
     boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
     m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_B, octave);
     add_module(&boids.data[active_boids], m_o);
+    add_module(&boids.data[active_boids], m_f);
     active_boids++;
   }
 
-  boid_params params = {.avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f};
+  boid_params params = {
+      .avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f, .fear = 3000.0f};
 
   InitWindow(WIDTH, HEIGHT, "window_me");
 
@@ -74,6 +107,7 @@ int main(void) {
   f32 dt = 1.0f / FPS;
   usize frame_ii = 0;
   while (!WindowShouldClose()) {
+    Vector2 mouse_pos = GetMousePosition();
     f32 samples_f32[MAX_SAMPLES] = {0};
     i16 samples_i16[MAX_SAMPLES] = {0};
     usize num_samples = dt * SAMPLE_RATE + 1;
@@ -83,7 +117,7 @@ int main(void) {
     tp_slice_i16 samples_slice_i16 = {.data = samples_i16,
                                       .count = num_samples};
 
-    update_boids(boids, active_boids, params, dt);
+    update_boids(boids, active_boids, params, dt, mouse_pos.x, mouse_pos.y);
     BeginDrawing();
     ClearBackground(RAYWHITE);
     for (usize ii = 0; ii < active_boids; ii++) {

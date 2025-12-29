@@ -10,6 +10,7 @@ typedef enum module_type {
 
 typedef enum oscillator_shape {
   SINE,
+  SAW,
 } oscillator_shape;
 
 typedef struct oscillator {
