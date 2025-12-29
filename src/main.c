@@ -43,24 +43,27 @@ int main(void) {
                   .amplitude = 1.0f};
   module m_o = {.type = OSCILLATOR, .inner = o, .wet = 1.0f};
 
-  boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
-  add_module(&boids.data[active_boids], m_o);
-  active_boids++;
+  for (u8 octave = 2; octave < 6; octave++) {
+    boids.data[active_boids] = make_boid(100.0f, 100.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_C, octave);
+    add_module(&boids.data[active_boids], m_o);
+    active_boids++;
 
-  boids.data[active_boids] = make_boid(110.0f, 100.0f, &allocator);
-  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_E, 4);
-  add_module(&boids.data[active_boids], m_o);
-  active_boids++;
+    boids.data[active_boids] = make_boid(110.0f, 100.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_E, octave);
+    add_module(&boids.data[active_boids], m_o);
+    active_boids++;
 
-  boids.data[active_boids] = make_boid(110.0f, 110.0f, &allocator);
-  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_A, 4);
-  add_module(&boids.data[active_boids], m_o);
-  active_boids++;
+    boids.data[active_boids] = make_boid(110.0f, 110.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_A, octave);
+    add_module(&boids.data[active_boids], m_o);
+    active_boids++;
 
-  boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
-  m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_B, 4);
-  add_module(&boids.data[active_boids], m_o);
-  active_boids++;
+    boids.data[active_boids] = make_boid(100.0f, 110.0f, &allocator);
+    m_o.inner.oscillator.freq.base = tp_music_note_to_hz(NOTE_B, octave);
+    add_module(&boids.data[active_boids], m_o);
+    active_boids++;
+  }
 
   boid_params params = {.avoid = 1.0f, .align = 1.0f, .cohesion = 1.0f};
 
